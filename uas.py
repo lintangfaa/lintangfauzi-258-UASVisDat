@@ -3,103 +3,116 @@ import plotly.express as px  # pip install plotly-express
 import streamlit as st  # pip install streamlit
 import numpy as np
 
-# setting website page (judul, logo, layout)
-st.set_page_config(page_title="Sales Dashboard", page_icon=":traffic_light:", layout="wide")
+# emojis: https://www.webfx.com/tools/emoji-cheat-sheet/
+# Streamlit page configuration 
+st.set_page_config(page_title="Dashboard", page_icon=":bar_chart:", layout="wide")
 
-# ---- MAINPAGE ----
-st.title(":car: Data Penindakan Pelanggaran Lalu Lintas dan Angkutan Jalan Tahun 2021")
-st.markdown("#") # pembuatan garis pembatas
+st.title(":traffic_light: Penindakan Pelanggaran Lalu Lintas dan Angkutan Jalan Tahun 2021 Bulan Januari-Juli")
+st.subheader("by : Istianah Retna Ningtyas Handayani - 1900018276 - UAS -VDATA - C")
+st.markdown("#")
 
-# proses pembacaan dataset
+# ---- READ EXCEL ----
 df = pd.read_excel(
-    io="dataset.xlsx", # nama file dataset
+    io="data_penindakan_pelanggaran_lalu_lintas_dan_angkutan_jalan_tahun_2021.xlsx",
     engine="openpyxl",
-    sheet_name="Data",  # nama worksheet yang digunakan
-    usecols="A:I",
+   sheet_name="Sheet1",
+    usecols="A:J",
     nrows=43,
 )
 
-# pembuatan sidebar untuk fitur filtering
-st.sidebar.header("Please Filter Here:")
-wilayah = st.sidebar.multiselect(
-    "Pilih Wilayah:",
-    options=df["Wilayah"].unique(),
-    default=df["Wilayah"].unique()
+#==================Sidebar====================
+
+st.sidebar.header("Silahkan Filter Data Disini :")
+
+Bulan = st.sidebar.multiselect(
+    "Filter Bulan:",
+    options=df["bulan"].unique(),
+    default=df["bulan"].unique(),
 )
 
-bulan = st.sidebar.multiselect(
-    "Pilih Bulan:",
-    options=df["Bulan"].unique(),
-    default=df["Bulan"].unique(),
+Wilayah = st.sidebar.multiselect(
+    "Filter Wilayah:",
+    options=df["wilayah"].unique(),
+    default=df["wilayah"].unique(),
 )
 
-
-# penerapan fitur filter kedalam query
 df_selection = df.query(
-    "Wilayah == @wilayah & Bulan == @bulan"
+    " bulan ==@Bulan & wilayah ==@Wilayah"
 )
 
-st.dataframe(df_selection) # menampilkan dataset
+st.markdown("#")
 
-st.markdown("""---""")
-
-# ---- MAINPAGE ----
-st.title(":bar_chart: Dashboard Data")
-st.markdown("##")
 
 # TOP KPI's
-bap_tilang = int(df_selection["BAP_Tilang"].sum())
-derek = int(df_selection["Penderekan"].sum())
+BAP_Tilang = int(df_selection["BAP_tilang"].sum())
+Penderekan = int(df_selection["Penderekan"].sum())
+Rata_rata_BAP_Tilang = int(df_selection["BAP_tilang"].mean())
+
 left_column, middle_column, right_column = st.columns(3)
 with left_column:
-    st.subheader("Total BAP Tilang :")
-    st.subheader(f"{bap_tilang:,}")
+    st.subheader("Total BAP Tilang :oncoming_police_car:")
+    st.subheader(f"{BAP_Tilang:,}")
 with middle_column:
-    st.subheader("Total Penderekan :")
-    st.subheader(f"{derek}")
+    st.subheader("Total Penderekan  :police_car:")
+    st.subheader(f"{Penderekan:,}")
+with right_column:
+    st.subheader("Rata-Rata BAP Tilang :bar_chart:")
+    st.subheader(f"{Rata_rata_BAP_Tilang}")
 
-st.markdown("""---""")
+st.markdown("#")
+st.dataframe(df_selection) # view dataframe on page
 
-# BAP TILANG BY WILAYAH [BAR CHART]
-tilang_wilayah = (df_selection.groupby(by=["Wilayah"]).sum()[["BAP_Tilang"]])
-fig_tilang = px.bar(
-    tilang_wilayah,
-    x=tilang_wilayah.index,
-    y="BAP_Tilang",
-    title="<b>BAP Tilang by Wilayah</b>",
-    color_discrete_sequence=["#0083B8"] * len(tilang_wilayah),
+#------------------------------ Visualisasi yang lain ---------------------------
+
+
+pie_chart = px.pie(df,
+                    title="<b>BAP Tilang Perbulan</b>",
+                    values= 'BAP_tilang',
+                    names= 'bulan')
+
+st.plotly_chart(pie_chart)
+
+# ================================================================================
+
+data_penindakan_pelanggaran_lalu_lintas = (
+    df_selection.groupby(by=["wilayah"]).sum()[["BAP_tilang"]].sort_values(by="BAP_tilang")
+)
+fig_pelanggaran_lalu_lintas = px.bar(
+    data_penindakan_pelanggaran_lalu_lintas,
+    x="BAP_tilang",
+    y=data_penindakan_pelanggaran_lalu_lintas.index,
+    orientation="h",
+    title="<b>BAP Tilang Berdasarkan Wilayah</b>",
+    color_discrete_sequence=["#0083B8"] * len(data_penindakan_pelanggaran_lalu_lintas),
     template="plotly_white",
 )
-fig_tilang.update_layout(
+fig_pelanggaran_lalu_lintas.update_layout(
     plot_bgcolor="rgba(0,0,0,0)",
     xaxis=(dict(showgrid=False))
 )
 
-df_tilang = pd.read_excel(
-    io="dataset.xlsx", # nama file dataset
-    engine="openpyxl",
-    sheet_name="Data",  # nama worksheet yang digunakan
-    usecols="A:K",
-    nrows=43,
+st.plotly_chart(fig_pelanggaran_lalu_lintas, use_container_width=True)
+
+# ================================================================================
+st.text("Grafik Garis Berdasarkan Kriteria BAP Tilang, Penderekan dan Stop Operasi ")
+
+chart_data = pd.DataFrame(
+     np.random.randn(20, 3),
+     columns=['BAP_tilang', 'Penderekan', 'stop_operasi'])
+
+st.line_chart(chart_data)
+
+
+# ================================================================================
+databar_chart_pelanggaran_lalu_lintas = (
+    df_selection.groupby(by=["bulan"]).sum()[["Penderekan"]].sort_values(by="Penderekan")
 )
+bar_chart = px.bar(databar_chart_pelanggaran_lalu_lintas,
+                    x=databar_chart_pelanggaran_lalu_lintas.index,
+                    y='Penderekan',
+                    text='penderekan',
+                    title="<b>Penderekan Berdasarkan Bulan</b>",
+                    color_discrete_sequence = ['#F63366']*len(databar_chart_pelanggaran_lalu_lintas),
+                    template='plotly_white')
+st.plotly_chart(bar_chart)
 
-df_select = df_tilang.query(
-    "Wilayah == @wilayah & Bulan == @bulan"
-)
-
-# --- PLOT PIE CHART
-pie_chart = px.pie(df_select,
-                title='<b>Total Penderekan tiap Bulan</b>',
-                values='Count',
-                names='Bulan')
-
-
-left_column, right_column = st.columns(2)
-left_column.plotly_chart(fig_tilang, use_container_width=True)
-right_column.plotly_chart(pie_chart, use_container_width=True)
-
-# --- LINE CHART
-line_chart = px.line(df_select, x="Wilayah", y="OCP2_Total", title='<b>Total OCP Roda 2 tiap Wilayah</b>')
-
-left_column2, right_column2 = st.columns(2)
-left_column.plotly_chart(line_chart, use_container_width=True)
