@@ -1,6 +1,6 @@
 # import library yang sudah diinstall sebelumnya
 import pandas as pd # untuk load data
-import plotly.express as px  # untuk proses pembuatan grafik
+# import plotly.express as px  # untuk proses pembuatan grafik
 import streamlit as st # untuk menjalankan program
 
 # setting website page (judul, logo, layout)
