@@ -1,7 +1,7 @@
-# import library yang sudah diinstall sebelumnya
-import pandas as pd # untuk load data
-import plotly.express as px  # untuk proses pembuatan grafik
-import streamlit as st # untuk menjalankan program
+import pandas as pd  # pip install pandas openpyxl
+import plotly.express as px  # pip install plotly-express
+import streamlit as st  # pip install streamlit
+import numpy as np
 
 # setting website page (judul, logo, layout)
 st.set_page_config(page_title="Sales Dashboard", page_icon=":traffic_light:", layout="wide")
